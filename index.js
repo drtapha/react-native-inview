@@ -1,19 +1,34 @@
-import React, {Component} from 'react'
-import PropTypes from 'prop-types'
+import React, { Component } from 'react'
+import PropTypes from 'prop-types';
+
 import {
   View,
   Dimensions,
   NativeMethodsMixin,
 } from 'react-native'
 
-class InView extends Component{
-  constructor(props){
+export default class InView extends Component {
+  constructor(props) {
     super(props)
 
-    this.state ={
+    this.state = {
       rectTop: 0,
       rectBottom: 0
     }
+  }
+  static propTypes = {
+    onChange: PropTypes.func.isRequired,
+    active: PropTypes.bool,
+    delay: PropTypes.number,
+    once: PropTypes.bool,
+    offset: PropTypes.number
+  }
+
+  static defaultProps = {
+    active: true,
+    delay: 100,
+    offset: 0,
+    once: false
   }
 
   onLayout() {
@@ -49,7 +64,7 @@ class InView extends Component{
     let rect = el.measureInWindow((x, y, width, height) => {
       this.setState({
         rectTop: y,
-        rectBottom: y + height,
+        rectBottom: y + this.props.offset,
         rectWidth: x + width,
       })
     })
@@ -58,6 +73,10 @@ class InView extends Component{
       this.state.rectWidth > 0 && this.state.rectWidth <= win.width
     )
 
+    if (isVisible && this.props.once) {
+      this.stopWatching();
+    }
+
     // notify the parent when the value changes
     if (this.lastValue !== isVisible) {
       this.lastValue = isVisible
@@ -65,7 +84,7 @@ class InView extends Component{
     }
   }
 
-  render(){
+  render() {
     return (
       <View ref="myview" {...this.props} onLayout={event => this.onLayout(event)}>
         {this.props.children}
@@ -74,14 +93,3 @@ class InView extends Component{
   }
 }
 
-InView.defaultProps = {
-  active: true,
-  delay: 100,
-}
-InView.propTypes = {
-  onChange: PropTypes.func.isRequired,
-  active: PropTypes.bool,
-  delay: PropTypes.number
-}
-
-module.exports = InView
